@@ -35,26 +35,22 @@ const registerUser = async (data) => {
 
 const loginUser = async ({ email, password }) => {
     try {
-        const response = await signInWithEmailAndPassword(
-            auth,
-            email,
-            password
-        );
-
-        const user = response.user;
-
-        return {
-            id: user.uid,
-            email: user.email,
-        };
+      const response = await signInWithEmailAndPassword(auth, email, password);
+      const user = response.user;
+      return {
+        id: user.uid,
+        email: user.email,
+      };
     } catch (error) {
-        return {
-            error: true,
-            code: error.code,
-            message: error.message,
-        };
+      console.error("Login error:", error); // Log the error to debug
+      return {
+        error: true,
+        code: error.code,
+        message: error.message,
+      };
     }
-};
+  };
+  
 
 const logOutUser = async () => {
     signOut(auth)
