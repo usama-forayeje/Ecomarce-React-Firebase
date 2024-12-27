@@ -5,7 +5,6 @@ import { categoryFormSchema } from "../../../validation/validationSchema";
 
 import { useNavigate, useParams } from "react-router";
 import { useEffect } from "react";
-import { toast } from "react-toastify";
 import {
     getFirebaseDataForEdit,
     setDataToFirebase,
@@ -32,11 +31,9 @@ export default function CreateCategory() {
         if (params.id) {
             // Update category;
             updateDataFromFirebase(`categories/${params.id}`, data);
-            toast.success("Update is successful");
         } else {
             // Create category;
             setDataToFirebase("categories", data);
-            toast.success("Creation is successful");
         }
         navigate("/dashboard/index-category");
     };
@@ -55,11 +52,11 @@ export default function CreateCategory() {
                 categoryImageUrl: "",
             });
         }
-    }, [params]);
+    }, [params, reset]);
 
     return (
-        <div className="max-w-md mx-auto mt-10 p-6 bg-gray-100 border rounded-lg">
-            <h2 className="text-2xl font-bold mb-4 text-center">
+        <div className="max-w-md p-6 mx-auto mt-10 bg-gray-100 border rounded-lg">
+            <h2 className="mb-4 text-2xl font-bold text-center">
                 {params.id ? "Edit Category" : "Add Category"}
             </h2>
             <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
@@ -76,7 +73,7 @@ export default function CreateCategory() {
                         type="text"
                         id="categoryName"
                         name="categoryName"
-                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                        className="block w-full p-2 mt-1 border border-gray-300 rounded-md"
                         placeholder="Enter product name"
                     />
                     {errors.categoryName && (
@@ -99,7 +96,7 @@ export default function CreateCategory() {
                         type="url"
                         id="categoryImageUrl"
                         name="categoryImageUrl"
-                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                        className="block w-full p-2 mt-1 border border-gray-300 rounded-md"
                         placeholder="Enter product image URL"
                     />
 
@@ -113,7 +110,7 @@ export default function CreateCategory() {
                 {/* Submit Button */}
                 <button
                     type="submit"
-                    className="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600"
+                    className="w-full px-4 py-2 text-white bg-green-500 rounded-lg hover:bg-green-600"
                 >
                     {params.id ? "Update Category" : "Add Category"}
                 </button>

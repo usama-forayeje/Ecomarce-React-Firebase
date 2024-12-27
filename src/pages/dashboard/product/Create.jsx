@@ -3,175 +3,158 @@ import { productFormSchema } from "../../../validation/validationSchema";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router";
-import { toast } from "react-toastify";
 import {
-    getFirebaseDataForEdit,
-    setDataToFirebase,
-    updateDataFromFirebase,
+  getFirebaseDataForEdit,
+  setDataToFirebase,
+  updateDataFromFirebase,
 } from "../../../database/firebaseUtils";
 import { useEffect } from "react";
 
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 export default function CreateProduct() {
-    const navigate = useNavigate();
-    const params = useParams();
+  const navigate = useNavigate();
+  const params = useParams();
 
-    const { categories } = useSelector((store) => store.categories);
+  const { categories } = useSelector((store) => store.categories);
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-        reset,
-    } = useForm({
-        resolver: yupResolver(productFormSchema),
-        defaultValues: {
-            productName: "",
-            productPrice: "",
-            productImageUrl: "",
-            productCategory: "",
-        },
-    });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm({
+    resolver: yupResolver(productFormSchema),
+    defaultValues: {
+      productName: "",
+      productPrice: "",
+      productImageUrl: "",
+      productCategory: "",
+    },
+  });
 
-    const onSubmit = (data) => {
-        if (params.id) {
-            // Update product;
-            updateDataFromFirebase(`products/${params.id}`, data);
-            toast.success("Update is successful");
-        } else {
-            // Create product;
-            setDataToFirebase("products", data);
-        }
+  const onSubmit = (data) => {
+    if (params.id) {
+      // Update product
+      updateDataFromFirebase(`products/${params.id}`, data);
+    } else {
+      // Create product
+      setDataToFirebase("products", data);
+    }
 
-        reset();
-        navigate("/dashboard/index-product");
-    };
+    reset();
+    navigate("/dashboard/index-product");
+  };
 
-    useEffect(() => {
-        async function getData() {
-            let res = await getFirebaseDataForEdit("products/" + params.id);
-            reset(res);
-        }
+  useEffect(() => {
+    async function getData() {
+      const res = await getFirebaseDataForEdit("products/" + params.id);
+      reset(res);
+    }
 
-        if (params.id) {
-            getData();
-        } else {
-            reset();
-        }
-    }, [params]);
+    if (params.id) {
+      getData();
+    } else {
+      reset();
+    }
+  }, [params, reset]);
 
-    return (
-        <div className="max-w-md mx-auto mt-10 p-6 bg-gray-100 shadow-md rounded-lg">
-            <h2 className="text-2xl font-bold mb-4 text-center">
-                {params.id ? "Edit Product" : "Add Product"}
-            </h2>
-            <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-                {/* Product Name */}
-                <div>
-                    <label
-                        htmlFor="productName"
-                        className="block text-sm font-medium text-gray-700"
-                    >
-                        Product Name
-                    </label>
-                    <input
-                        type="text"
-                        id="productName"
-                        name="productName"
-                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                        placeholder="Enter product name"
-                        {...register("productName")}
-                    />
+  return (
+    <div className="max-w-lg mx-auto mt-10">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-center">
+            {params.id ? "Edit Product" : "Add Product"}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+            {/* Product Name */}
+            <div>
+              <Label htmlFor="productName">Product Name</Label>
+              <Input
+                type="text"
+                id="productName"
+                placeholder="Enter product name"
+                {...register("productName")}
+              />
+              {errors.productName && (
+                <span className="text-sm text-red-500">
+                  {errors.productName?.message}
+                </span>
+              )}
+            </div>
 
-                    {errors.productName && (
-                        <span className="text-red-400">
-                            {errors.productName?.message}
-                        </span>
-                    )}
-                </div>
+            {/* Product Category */}
+            <div>
+              <Label htmlFor="productCategory">Product Category</Label>
+              <Select
+                onValueChange={(value) => {
+                  reset((prev) => ({ ...prev, productCategory: value }));
+                }}
+                value={categories.find((cat) => cat.id === categories.productCategory)?.id || ""}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories?.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.categoryName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.productCategory && (
+                <span className="text-sm text-red-500">
+                  {errors.productCategory?.message}
+                </span>
+              )}
+            </div>
 
-                {/* Product Price */}
-                <div>
-                    <label
-                        htmlFor="productCategory"
-                        className="block text-sm font-medium text-gray-700"
-                    >
-                        Product Category
-                    </label>
-                    <select
-                        {...register("productCategory")}
-                        id="productCategory"
-                        className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    >
-                        {categories?.map((cat) => (
-                            <option key={cat.id} value={cat.id}>
-                                {cat.categoryName}
-                            </option>
-                        ))}
-                    </select>
+            {/* Product Price */}
+            <div>
+              <Label htmlFor="productPrice">Product Price</Label>
+              <Input
+                type="number"
+                id="productPrice"
+                placeholder="Enter product price"
+                {...register("productPrice")}
+              />
+              {errors.productPrice && (
+                <span className="text-sm text-red-500">
+                  {errors.productPrice?.message}
+                </span>
+              )}
+            </div>
 
-                    {errors.productCategory && (
-                        <span className="text-red-400">
-                            {errors.productCategory?.message}
-                        </span>
-                    )}
-                </div>
+            {/* Product Image URL */}
+            <div>
+              <Label htmlFor="productImageUrl">Product Image URL</Label>
+              <Input
+                type="url"
+                id="productImageUrl"
+                placeholder="Enter product image URL"
+                {...register("productImageUrl")}
+              />
+              {errors.productImageUrl && (
+                <span className="text-sm text-red-500">
+                  {errors.productImageUrl?.message}
+                </span>
+              )}
+            </div>
 
-                {/* Product Price */}
-                <div>
-                    <label
-                        htmlFor="productPrice"
-                        className="block text-sm font-medium text-gray-700"
-                    >
-                        Product Price
-                    </label>
-                    <input
-                        type="number"
-                        id="productPrice"
-                        name="productPrice"
-                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                        placeholder="Enter product price"
-                        {...register("productPrice")}
-                    />
-
-                    {errors.productPrice && (
-                        <span className="text-red-400">
-                            {errors.productPrice?.message}
-                        </span>
-                    )}
-                </div>
-
-                {/* Product Image URL */}
-                <div>
-                    <label
-                        htmlFor="productImageUrl"
-                        className="block text-sm font-medium text-gray-700"
-                    >
-                        Product Image URL
-                    </label>
-                    <input
-                        type="url"
-                        id="productImageUrl"
-                        name="productImageUrl"
-                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                        placeholder="Enter product image URL"
-                        {...register("productImageUrl")}
-                    />
-
-                    {errors.productImageUrl && (
-                        <span className="text-red-400">
-                            {errors.productImageUrl?.message}
-                        </span>
-                    )}
-                </div>
-
-                {/* Submit Button */}
-                <button
-                    type="submit"
-                    className="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600"
-                >
-                    {params.id ? "Update" : "Save"}
-                </button>
-            </form>
-        </div>
-    );
+            {/* Submit Button */}
+            <Button type="submit" className="w-full">
+              {params.id ? "Update" : "Save"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }

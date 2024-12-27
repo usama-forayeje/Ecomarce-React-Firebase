@@ -20,3 +20,4 @@ const categoriesSlice = createSlice({
 export default categoriesSlice.reducer;
 
 export const { getCategories } = categoriesSlice.actions;
+console.log(getCategories);

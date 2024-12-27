@@ -11,6 +11,9 @@ const store = configureStore({
         auth: authSlice,
         carts: cartSlice,
     },
+    
 });
+console.log(store);
+
 
 export default store;

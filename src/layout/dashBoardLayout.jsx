@@ -16,8 +16,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu";
-import {Input} from "../components/ui/input";
-import { Filter } from "lucide-react";
+import { Filter, ListFilterPlus } from "lucide-react";
+import { Button } from "../components/ui/button";
+import InputSearch from "../components/ui/searchbar";
+import { Outlet } from "react-router";
 
 export default function DashboardLayout() {
   return (
@@ -25,33 +27,32 @@ export default function DashboardLayout() {
       <SidebarProvider>
         <AppSidebar />
         <SidebarInset>
-          <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-            <div className="flex items-center gap-2 px-4">
+          <header className="flex h-16 shrink-0 items-center justify-between px-4 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+            {/* Sidebar Trigger and Breadcrumb */}
+            <div className="flex items-center gap-2">
               <SidebarTrigger className="-ml-1" />
               <Separator orientation="vertical" className="h-4 mr-2" />
               <Breadcrumb>
                 <BreadcrumbItem>
-                  <BreadcrumbLink href="#">Dashboard</BreadcrumbLink>
+                  <BreadcrumbLink>Admin Dashboard</BreadcrumbLink>
                 </BreadcrumbItem>
               </Breadcrumb>
+            </div>
 
-              {/* Search Bar */}
-              <div className="flex-grow ml-4">
-                <Input
-                  className="w-full"
-                  placeholder="Search..."
-                  size="lg"
-                  icon={<Filter />}
-                />
-              </div>
-
-              {/* Filter Dropdown */}
+            {/* Search Bar and Filter */}
+            <div className="flex items-center gap-4">
+              <InputSearch
+                className="w-[300px] lg:w-[400px] xl:w-[500px] px-6 py-3 text-lg rounded-lg border border-gray-300 shadow-md focus:outline-none"
+                placeholder="Search..."
+                size="xl"
+                icon={<Filter />}
+              />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="flex items-center px-4 py-2 space-x-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300">
-                    <Filter />
+                  <Button variant="outline" className="flex items-center px-4 py-3">
+                    <ListFilterPlus className="mr-2" />
                     <span>Filter</span>
-                  </button>
+                  </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem>Option 1</DropdownMenuItem>
@@ -62,14 +63,11 @@ export default function DashboardLayout() {
             </div>
           </header>
 
-          <div className="flex flex-col flex-1 gap-4 p-4 pt-0">
-            <div className="grid gap-4 auto-rows-min md:grid-cols-3">
-              <div className="aspect-video rounded-xl bg-muted/50" />
-              <div className="aspect-video rounded-xl bg-muted/50" />
-              <div className="aspect-video rounded-xl bg-muted/50" />
-            </div>
-            <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
-          </div>
+          <main className="flex-1 p-6 bg-gray-100">
+                    <div className="h-full px-4 py-6 bg-white rounded">
+                        <Outlet />
+                    </div>
+                </main>
         </SidebarInset>
       </SidebarProvider>
     </>
