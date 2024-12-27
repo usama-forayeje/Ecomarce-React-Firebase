@@ -27,6 +27,7 @@ export const getFirebaseData = async (tableName) => {
                 });
 
                 resolve(updateCategoryList);
+                
             });
         } catch (error) {
             reject(error);

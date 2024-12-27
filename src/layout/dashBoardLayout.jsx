@@ -20,8 +20,53 @@ import { Filter, ListFilterPlus } from "lucide-react";
 import { Button } from "../components/ui/button";
 import InputSearch from "../components/ui/searchbar";
 import { Outlet } from "react-router";
-
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { getCategories } from "../features/categories/categorySlice";
+import { getProducts } from "../features/products/productsSlice";
+import { onValue, ref } from "firebase/database";
+import { db } from "../database/firebaseUtils";
 export default function DashboardLayout() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const categoryRef = ref(db, "categories");
+    const productRef = ref(db, "products");
+
+    // Set category to redux for getting this content globally;
+    const disableCategory = onValue(categoryRef, (snapshot) => {
+      const updateCategoryList = [];
+
+      snapshot.forEach((item) => {
+        updateCategoryList.push({
+          id: item.key,
+          ...item.val(),
+        });
+      });
+
+      dispatch(getCategories(updateCategoryList));
+    });
+
+    // Set products to redux for getting this content globally;
+    const disableProduct = onValue(productRef, (snapshot) => {
+      const updateProductList = [];
+
+      snapshot.forEach((item) => {
+        updateProductList.push({
+          id: item.key,
+          ...item.val(),
+        });
+      });
+
+      dispatch(getProducts(updateProductList));
+    });
+
+    return () => {
+      disableCategory();
+      disableProduct();
+    };
+  }, [dispatch]);
+
   return (
     <>
       <SidebarProvider>
@@ -49,7 +94,10 @@ export default function DashboardLayout() {
               />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="flex items-center px-4 py-3">
+                  <Button
+                    variant="outline"
+                    className="flex items-center px-4 py-3"
+                  >
                     <ListFilterPlus className="mr-2" />
                     <span>Filter</span>
                   </Button>
@@ -64,10 +112,10 @@ export default function DashboardLayout() {
           </header>
 
           <main className="flex-1 p-6 bg-gray-100">
-                    <div className="h-full px-4 py-6 bg-white rounded">
-                        <Outlet />
-                    </div>
-                </main>
+            <div className="h-full px-4 py-6 bg-white rounded">
+              <Outlet />
+            </div>
+          </main>
         </SidebarInset>
       </SidebarProvider>
     </>

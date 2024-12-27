@@ -9,7 +9,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-
 import { removeDataFromFirebase } from "../../../database/firebaseUtils";
 import {
   Table,
@@ -20,37 +19,64 @@ import {
 } from "@/components/ui/table";
 import { Trash, Pencil, Plus } from "lucide-react";
 import { Button } from "../../../components/ui/button";
-import { getCategories } from "../../../features/categories/categorySlice";
+import  fetchCategories  from "../../../features/categories/categorySlice"; // Ensure correct import
 
 export default function IndexCategory() {
-  const { categories } = useSelector((store) => store.categories);
+  const { categories, loading, error } = useSelector((store) => store.categories); 
   const navigate = useNavigate();
-  const [deleteCategoryId, setDeleteCategoryId] = useState(false);
+  const [deleteCategoryId, setDeleteCategoryId] = useState(null); // Fix initial state to null instead of false
   const dispatch = useDispatch();
 
-
+  // Add category handler
   const handleAdd = () => {
     navigate("/dashboard/create-category");
   };
 
+  // Edit category handler
   const handleEdit = (data) => {
     navigate(`/dashboard/edit-category/${data.id}`);
   };
 
+  // Delete category handler
   const handleDelete = () => {
     if (deleteCategoryId) {
       async function deleteCat() {
-        await removeDataFromFirebase("categories/" + deleteCategoryId);
-        // dispatch(deleteCategory(deleteCategoryId));
+        try {
+          await removeDataFromFirebase("categories/" + deleteCategoryId);
+          dispatch(fetchCategories()); // Refetch categories after deletion
+        } catch (error) {
+          console.error("Error deleting category:", error);
+        }
       }
       deleteCat();
-      setDeleteCategoryId(false);
+      setDeleteCategoryId(null); // Reset deleteCategoryId after deletion
     }
   };
 
+  // Fetch categories when component mounts
   useEffect(() => {
-    dispatch(getCategories());
+    dispatch(fetchCategories());
   }, [dispatch]);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="p-6 bg-white rounded-lg shadow-md">
+        <h2 className="text-lg font-medium text-center">Loading categories...</h2>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="p-6 bg-white rounded-lg shadow-md">
+        <h2 className="text-lg font-medium text-center text-red-500">
+          Failed to load categories: {error}
+        </h2>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-md">
@@ -74,11 +100,11 @@ export default function IndexCategory() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {categories &&
+          {categories && categories.length > 0 ? (
             categories.map((category) => (
               <TableRow key={category.id}>
                 <TableCell>{category.id}</TableCell>
-                <TableCell>{category.name}</TableCell>
+                <TableCell>{category.categoryName}</TableCell>
                 <TableCell>
                   <div className="flex gap-2">
                     <Button
@@ -102,17 +128,19 @@ export default function IndexCategory() {
                   </div>
                 </TableCell>
               </TableRow>
-            ))}
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={3}>No Categories Found</TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
 
+      {/* Delete confirmation dialog */}
       {deleteCategoryId && (
-        <AlertDialog
-          open={true}
-          onOpenChange={() => setDeleteCategoryId(false)}
-        >
+        <AlertDialog open={true} onOpenChange={() => setDeleteCategoryId(null)}>
           <AlertDialogContent>
-            {/* Accessible Title */}
             <AlertDialogHeader>
               <AlertDialogTitle>Delete Confirmation</AlertDialogTitle>
               <AlertDialogDescription>
@@ -121,10 +149,7 @@ export default function IndexCategory() {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setDeleteCategoryId(false)}
-              >
+              <Button variant="outline" onClick={() => setDeleteCategoryId(null)}>
                 Cancel
               </Button>
               <Button variant="destructive" onClick={handleDelete}>

@@ -23,9 +23,11 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import { Link } from "react-router";
+import { useNavigate } from "react-router";
 
 export function NavMain() {
+  const navigate = useNavigate();
+
   const items = [
     {
       title: "Dashboard",
@@ -37,7 +39,7 @@ export function NavMain() {
       title: "Products",
       icon: Package,
       items: [
-        { title: "Create Product", url: "/products/create" },
+        { title: "Create Product", url: "/dashboard/create-product" },
         { title: "All Products", url: "/dashboard/index-product" },
       ],
     },
@@ -71,7 +73,10 @@ export function NavMain() {
           >
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>
-                <SidebarMenuButton tooltip={item.title}>
+                <SidebarMenuButton
+                  tooltip={item.title}
+                  onClick={() => item.url && navigate(item.url)}
+                >
                   {item.icon && <item.icon />}
                   <span>{item.title}</span>
                   {item.items && (
@@ -87,9 +92,12 @@ export function NavMain() {
                     {item.items.map((subItem) => (
                       <SidebarMenuSubItem key={subItem.title}>
                         <SidebarMenuSubButton asChild>
-                          <Link to={subItem.url}>
-                            <span>{subItem.title}</span>
-                          </Link>
+                          <span
+                            className="cursor-pointer"
+                            onClick={() => navigate(subItem.url)}
+                          >
+                            {subItem.title}
+                          </span>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
                     ))}
@@ -103,9 +111,3 @@ export function NavMain() {
     </SidebarGroup>
   );
 }
-
-
-    
-        
-    
-
